@@ -20,12 +20,16 @@ import java.util.concurrent.TimeUnit;
 
 import javax.mail.MessagingException;
 
+import org.apache.poi.hssf.util.HSSFColor.BROWN;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.UnhandledAlertException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.Select;
 
 import com.qfor.driverscript.Environment;
@@ -33,6 +37,7 @@ import com.qfor.interactions.Interactions2;
 import com.qfor.testcase.TestCase;
 import com.qfor.utils.ScreenShotUtils;
 import com.relevantcodes.extentreports.LogStatus;
+import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
 
 import projectUtils.ProjectEmailUtil;
 
@@ -50,6 +55,7 @@ public class ProjectSpecific {
 	public static String monthandyear = "";
 	public static String ddvalue = "";
 	public static List<String> dealList = new ArrayList<String>();
+	public static String winHandleBefore = null;
 
 	/**
 	 * Function to invoke DataBase Connection
@@ -2791,19 +2797,19 @@ public class ProjectSpecific {
 			// manage the Alert here.
 			String OTPtext = readOTP.getOTP();
 			// wait sometime to read the value.
-			Thread.sleep(1000);
+			Thread.sleep(2000);
 
 			if (OTPtext != "") {
 				System.out.println(OTPtext);
 				WebElement element = itr2.getWebElement(driver, screenName, ObjectName);
 				if (isAlertPresent(driver)) {
 					driver.switchTo().alert().dismiss();
-				} 
-					element.sendKeys(OTPtext);
-					com.qfor.driverscript.DriverScriptRef.Report.log(LogStatus.PASS,
-							"OTP has been Entered as expected");
-					successFlag = true;
-			
+				}
+				element.sendKeys(OTPtext);
+				Thread.sleep(1000);
+				com.qfor.driverscript.DriverScriptRef.Report.log(LogStatus.PASS, "OTP has been Entered as expected");
+				successFlag = true;
+
 			} else {
 
 				com.qfor.driverscript.DriverScriptRef.Report.log(LogStatus.FAIL, ObjectName
@@ -2834,4 +2840,310 @@ public class ProjectSpecific {
 		} // catch
 	}
 
+	// lavanya copy Jan 24
+
+	/**
+	 * Function to switch to another Window
+	 * 
+	 * @param driver
+	 * @param screenName
+	 *            from the input sheet
+	 * @param ObjectName
+	 *            for the respective object from the input sheet
+	 */
+
+	public static boolean switchToWindowAndMaximize(WebDriver driver, String screenName, String ObjectName,
+			String value) {
+		try {
+			// Store the current window handle
+			winHandleBefore = driver.getWindowHandle();
+			// Switch to new window opened
+			for (String winHandle : driver.getWindowHandles()) {
+				driver.switchTo().window(winHandle);
+				driver.manage().window().maximize();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+
+	/**
+	 * Function to get Text from the Element List
+	 * 
+	 * @param driver
+	 * @param screenName
+	 *            from the input sheet
+	 * @param ObjectName
+	 *            for the respective object from the input sheet
+	 */
+	public static List<String> getTextfromElements(WebDriver driver, String screenName, String ObjectName,
+			String value) {
+		List<String> textList = new ArrayList<>();
+		List<WebElement> list = itr2.getWebElements(driver, screenName, ObjectName);
+		try {
+			for (WebElement element : list) {
+				textList.add(element.getText());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return textList;
+	}
+
+	/**
+	 * Function to get Text from the Element List
+	 * 
+	 * @param driver
+	 * @param screenName
+	 *            from the input sheet
+	 * @param ObjectName
+	 *            for the respective object from the input sheet
+	 */
+	public static boolean switchToDefaultWindow(WebDriver driver, String screenName, String ObjectName, String value) {
+		// Switch back to original browser (first window)
+		driver.switchTo().window(winHandleBefore);
+		return true;
+
+	}
+
+	/**
+	 * Function to close driver
+	 * 
+	 * @param driver
+	 * @param screenName
+	 *            from the input sheet
+	 * @param ObjectName
+	 *            for the respective object from the input sheet
+	 */
+	public static boolean closeDriver(WebDriver driver, String screenName, String ObjectName, String value) {
+		driver.close();
+		return true;
+
+	}
+
+	/**
+	 * Function to press Enter Key
+	 * 
+	 * @param driver
+	 * @param screenName
+	 *            from the input sheet
+	 * @param ObjectName
+	 *            for the respective object from the input sheet
+	 */
+	public static boolean pressEnterKey(WebDriver driver, String screenName, String ObjectName, String value) {
+		// Press enter Key
+		WebElement element = itr2.getWebElement(driver, screenName, ObjectName);
+		element.sendKeys(Keys.ENTER);
+		com.qfor.driverscript.DriverScriptRef.Report.log(LogStatus.PASS, "ENTER Key is pressed");
+		return true;
+
+	}
+
+	// Jan 30
+	public static boolean setAllUserPermissions(WebDriver driver, String screenName, String ObjectName, String value) {
+
+		try {
+			//the following line is to be edited later
+			//WebElement scrollDiv = driver.findElement(By.xpath("//*[@id='ctl00_MainContentRoot_ASPxUserPermission_DXFixedColumnsDiv']"));
+		
+				
+				
+			List<WebElement> tabledataElements = itr2.getWebElements(driver, screenName, ObjectName);
+			WebElement element = null;
+			int i = 0;
+			boolean flag = false;
+			String username = "";
+			for (WebElement tdEle : tabledataElements) {
+				if (i == 0) {
+					username = tdEle.getText();
+					if (value.equals(username)) {
+						com.qfor.driverscript.DriverScriptRef.Report.log(LogStatus.PASS, "UserName : " + username);
+					}
+				} else {
+					element = tdEle.findElement(By.tagName("span")).findElement(By.tagName("span"));
+					//itr2.scrollTo(driver, element); //this gives error after the 7th item.
+					//if its at 7 scroll the whole div to the end for other elements to be visisble.
+					if(!element.isDisplayed()){
+						WebElement scrollDiv = driver.findElement(By.xpath("//*[@id='ctl00_MainContentRoot_ASPxUserPermission_DXFixedColumnsDiv']"));
+						((JavascriptExecutor) driver).executeScript("arguments[0].scrollLeft = arguments[0].offsetWidth", scrollDiv);
+						if(!element.isDisplayed()){
+							((JavascriptExecutor) driver).executeScript("arguments[0].scrollLeft = arguments[0].0", scrollDiv);
+						}
+					}
+					if (element.getAttribute("class").contains("Unchecked")) {
+						//itr2.scrollTo(driver, element);
+						element.click();
+						//checkifElementNotPresent(driver, screenName, "Loading", "2000");
+
+					} else {
+						continue;
+					}
+					flag = true;
+				}
+				
+				//this sleep is to avoid checkbox progress on checkbox click.
+				Thread.sleep(3000);
+				i++;
+
+			}
+			if (flag == true) {
+				com.qfor.driverscript.DriverScriptRef.Report.log(LogStatus.PASS,
+						"All user permission has been set for user : " + username);
+			} else {
+				com.qfor.driverscript.DriverScriptRef.Report.log(LogStatus.FAIL,
+						"All user permission did not set for user : " + username);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return true;
+	}
+
+	
+	//scroll To test method.
+	
+	public static boolean scrollcheckbox(WebDriver driver, String screenName, String ObjectName, String value) {
+		boolean successFlag = false;
+		
+		//for table body scroll to the end.
+		
+		//WebElement tableA = driver.findElement(By.xpath("//*[@id='ctl00_MainContentRoot_ASPxUserPermission_DXMainTable']"));
+		WebElement scrollDiv = driver.findElement(By.xpath("//*[@id='ctl00_MainContentRoot_ASPxUserPermission_DXFixedColumnsDiv']"));
+		//System.out.println(tableA.isDisplayed());
+		// Scroll to div's most right:
+		System.out.println(scrollDiv.isDisplayed());
+		
+		((JavascriptExecutor) driver).executeScript("arguments[0].scrollLeft = arguments[0].offsetWidth", scrollDiv);
+		//((JavascriptExecutor) driver).executeScript("arguments[0].scrollLeft = arguments[0].offsetWidth", tableA);
+		
+		
+		WebElement lastTd = driver.findElement(By.id("ctl00_MainContentRoot_ASPxUserPermission_tccell0_16"));
+		System.out.println(lastTd.isDisplayed());
+		
+		
+/*		//WebElement checkboxlast = driver.findElement(By.xpath("//*[@id='ctl00_MainContentRoot_ASPxUserPermission_cell0_16_chUpdate Deal URL_28_S_D']"));
+		WebElement lastTd = driver.findElement(By.id("ctl00_MainContentRoot_ASPxUserPermission_tccell0_16"));
+		
+		System.out.println(lastTd.isDisplayed());
+		
+		JavascriptExecutor js = (JavascriptExecutor)driver; 
+		js.executeScript("arguments[0].scrollIntoView()", lastTd);
+		
+		System.out.println(lastTd.isDisplayed());
+		
+		System.out.println(lastTd.isDisplayed());*/
+		return successFlag;
+
+	}
+	public static boolean scrollTotest(WebDriver driver, String screenName, String ObjectName, String value) {
+		boolean successFlag = false;
+				WebElement promotLink = driver.findElement(By.xpath("//*[@id='ctl00_MainContentRoot_ASPxGridViewManageUsers_cell0_8_lbAdminUser']"));
+				System.out.println(promotLink.isDisplayed());
+				
+				JavascriptExecutor js = (JavascriptExecutor)driver; 
+				js.executeScript("arguments[0].scrollIntoView()", promotLink);
+
+				
+						
+			
+		
+		return successFlag;
+
+	}
+	
+	//Jan 31 - 
+	
+	public static boolean promoteUser(WebDriver driver, String screenName, String ObjectName, String value) {
+		boolean successFlag = false;
+		List<WebElement> accessTable = itr2.getWebElements(driver, screenName, ObjectName);
+		
+		System.out.println(accessTable.size());
+
+		WebElement userNameField = null;
+		WebElement promoteLink = null;
+		
+		int i=0;
+		
+/*		WebElement firstRow = driver.findElement(By.xpath("//table[@id ='ctl00_MainContentRoot_ASPxGridViewManageUsers_DXMainTable']/tbody/tr[4]"));
+		
+		WebElement firstCol = firstRow.findElement(By.xpath("td[1]"));
+		firstCol.getText();
+		System.out.println(firstCol.getText());*/
+		for (WebElement row : accessTable) {
+			if (i < 3) {
+				i++;
+				continue;
+			} else {
+				userNameField = row.findElement(By.xpath("td[1]"));
+				System.out.println(userNameField.getText());
+
+				if (userNameField.getText().equalsIgnoreCase(value)) {
+					promoteLink = row.findElement(By.xpath("td[6]"));
+					System.out.println(promoteLink.isDisplayed());
+
+					JavascriptExecutor js = (JavascriptExecutor) driver;
+					js.executeScript("arguments[0].scrollIntoView()", promoteLink);
+
+					System.out.println(promoteLink.isDisplayed());
+
+					System.out.println(promoteLink.getText());
+					if (promoteLink.getText().equalsIgnoreCase("Promote")) {
+						promoteLink.click();
+					} else {
+						System.out.println("The user is already promoted.");
+					}
+
+					successFlag = true;
+					return successFlag;
+
+				} else {
+					System.out.println("The search user doesn't exist");
+
+				}
+
+/*				try {
+					Thread.sleep(7000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}*/
+
+				i++;
+			}
+		}
+
+		return successFlag;
+
+	}
+	
+	//mulitpbrowser will be deleted later.
+	public static boolean mutibrowser(WebDriver driver, String screenName, String ObjectName, String value) {
+		boolean successFlag = false;
+			
+		
+		//CHECK BROWSER INSTANCE NEW
+		System.setProperty("webdriver.gecko.driver", "TestData/geckodriver.exe");
+		DesiredCapabilities capabilities = new DesiredCapabilities();
+			capabilities.setCapability("marionette", true);
+			capabilities.setCapability(FirefoxDriver.BINARY, "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe");
+			//driver = new MarionetteDriver(capabilities); 
+			WebDriver browser = new FirefoxDriver(capabilities);
+			browser.get("bankofamericastage.lewtan.com");
+			
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			browser.close();
+			browser.quit();
+		return successFlag;
+
+	}
+	
+
+	
 }
